@@ -8,18 +8,22 @@ from azure.core.credentials import AzureKeyCredential
 from azure.identity import DefaultAzureCredential
 from azure.storage.blob import BlobServiceClient
 
+BLOB_ENDPOINT = os.getenv("BLOB_ENDPOINT")
 credential = DefaultAzureCredential()  # Uses managed identity or local login
-blob_service_client = BlobServiceClient(account_url="https://functionapp912.blob.core.windows.net/", credential=credential)
+blob_service_client = BlobServiceClient(account_url=BLOB_ENDPOINT, credential=credential)
 
 
 
 app = func.FunctionApp(http_auth_level=func.AuthLevel.FUNCTION)
 
 key = os.getenv("LANGUAGE_KEY")
-endpoint = os.getenv("LANGUAGE_ENDPOINT")
+lang_endpoint = os.getenv("LANGUAGE_ENDPOINT")
 
 credential = AzureKeyCredential(key)
-client = TextAnalyticsClient(endpoint=endpoint, credential=credential)
+client = TextAnalyticsClient(endpoint=lang_endpoint, credential=credential)
+
+
+#################### TEXT ANALYTICS (HEALTH) #########################
 
 def get_blob_content(url):
     # connection_string = "BlobEndpoint=https://functionapp912.blob.core.windows.net/;QueueEndpoint=https://functionapp912.queue.core.windows.net/;FileEndpoint=https://functionapp912.file.core.windows.net/;TableEndpoint=https://functionapp912.table.core.windows.net/;SharedAccessSignature=sv=2022-11-02&ss=bfqt&srt=co&sp=rwdlacupiyx&se=2024-10-01T06:46:08Z&st=2024-09-30T22:46:08Z&spr=https&sig=QLdmo38QkPDh%2B1tVlkR5p33%2FuZu%2FVuRGPaSqzquKT64%3D"
@@ -43,7 +47,7 @@ def write_to_blob(data):
 
 @app.route(route="textanalytics/", methods=["GET"])
 def health_example(req: func.HttpRequest) -> func.HttpResponse:
-    content = get_blob_content("https://functionapp912.blob.core.windows.net/text-files/health_sample.txt")
+    content = get_blob_content(F"{BLOB_ENDPOINT}/text-files/health_sample.txt")
     logging.info("content: %s", content)
     documents = [
         content,
@@ -75,15 +79,18 @@ def health_example(req: func.HttpRequest) -> func.HttpResponse:
 import openai
 import os
 
+
+#################### CALL AOAI ####################
+
 def call_openai(analysis_result):
     # Set up Azure OpenAI credentials
     openai.api_type = "azure"
     openai.api_base = os.getenv("OPENAI_API_BASE")  # e.g., "https://your-resource-name.openai.azure.com/"
-    openai.api_version = os.getenv("OPENAI_API_VERSION")  # e.g., "2023-05-15"
-    openai.api_key = os.getenv("OPENAI_API_KEY")
+    # openai.api_version = os.getenv("OPENAI_API_VERSION")  # e.g., "2023-05-15"
+    # openai.api_key = os.getenv("OPENAI_API_KEY")
 
     # Replace 'your-deployment-name' with your actual deployment name
-    deployment_id = "your-deployment-name"
+    deployment_id = "gpt-4o"
 
     # Prepare the prompt using the analysis result
     prompt = generate_prompt(analysis_result)  # Define this function to create a prompt based on analysis_result
@@ -141,3 +148,77 @@ def process_text(req: func.HttpRequest) -> func.HttpResponse:
     except Exception as e:
         logging.error(f"An error occurred in the processing function: {e}")
         return func.HttpResponse(f"An error occurred: {str(e)}", status_code=500)
+
+
+
+#################### TRANSCRIPTION ####################
+
+SUBSCRIPTION_KEY = os.getenv("SPEECH_KEY")
+SERVICE_REGION = os.getenv("SPEECH_REGION")
+NAME = "Simple transcription"
+DESCRIPTION = "Simple transcription description"
+LOCALE = "en-US"
+# RECORDINGS_BLOB_URI = "<Your SAS Uri to the recording>"
+RECORDINGS_CONTAINER_URI = os.getenv("CONTAINER_URL")
+
+import requests
+import json
+import time
+    
+@app.route(route="transcribe/", methods=["POST"])
+def post_transcription_request(req: func.HttpRequest) -> func.HttpResponse:
+    """
+    Function to send a transcription request to Azure Cognitive Services Speech to Text API.
+    """
+    
+    
+    url = f"https://{SERVICE_REGION}.api.cognitive.microsoft.com/speechtotext/v3.2/transcriptions"
+    headers = {
+        "Ocp-Apim-Subscription-Key": SUBSCRIPTION_KEY,
+        "Content-Type": "application/json"
+    }
+    data = {
+        "contentContainerUrl": RECORDINGS_CONTAINER_URI,
+        "destinationContainerUrl": "https://functionapp912.blob.core.windows.net/speech-output",
+        "locale": LOCALE,
+        "displayName": "transcription-job",
+        "model": None,
+        "properties": {}
+    }
+
+    logging.info(f"data: {data}")
+
+    # Make the POST request
+    response = requests.post(url, headers=headers, data=json.dumps(data))
+
+    logging.info("response: ")
+    logging.info(response.text)
+
+    url = response.json().get("self")
+
+    time.sleep(10)
+
+    response = requests.get(url, headers=headers)
+    logging.info("Polling response: ")
+    logging.info(response.text)
+
+    # Return the status code and response text
+    return func.HttpResponse(f"Transcription request sent with status code: {response.status_code}")
+
+
+# @app.route(route="get_transcription_results/", methods=["GET"])
+# def get_transcription_results(req: func.HttpRequest) -> func.HttpResponse:
+#     """
+
+#     """
+    
+#     headers = {
+#         "Ocp-Apim-Subscription-Key": "706e7524522a4b78a377c59e8d2c56d0"
+#     }
+#     transcription_endpoint = os.getenv("TRANSCRIPTION_ENDPOINT")
+#     # Send the GET request
+#     response = requests.get(transcription_endpoint, headers=headers)
+
+#     # Print the status code and response content
+#     print("Status Code:", response.status_code)
+#     print("Response Body:", response.text)
