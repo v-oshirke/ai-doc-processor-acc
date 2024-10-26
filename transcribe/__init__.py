@@ -2,7 +2,6 @@ import azure.functions as func
 import logging
 import os
 import requests
-from azure.ai.textanalytics import TextAnalyticsClient
 from azure.core.credentials import AzureKeyCredential
 
 from azure.identity import DefaultAzureCredential
@@ -17,22 +16,18 @@ current_date = datetime.date.today()
 month = current_date.month
 day = current_date.day # '%B' for full month name, '%d' for day of the month
 
-BLOB_ENDPOINT = os.getenv("BLOB_ENDPOINT")
-blob_credential = DefaultAzureCredential()  # Uses managed identity or local login
-blob_service_client = BlobServiceClient(account_url=BLOB_ENDPOINT, credential=blob_credential)
+if os.getenv('LOCAL_DEV') == "True":
+    BLOB_ENDPOINT = os.getenv("BLOB_ENDPOINT")
+    blob_credential = DefaultAzureCredential()  # Uses managed identity or local login
+    blob_service_client = BlobServiceClient(account_url=BLOB_ENDPOINT, credential=blob_credential)
+    SUBSCRIPTION_KEY = os.getenv("SPEECH_KEY")
+    SERVICE_REGION = os.getenv("SPEECH_REGION")
+    BLOB_ENDPOINT=os.getenv("BLOB_ENDPOINT")
+    DESTINATION_CONTAINER_URL=os.getenv("DESTINATION_CONTAINER_URL")
+
 
 app = func.FunctionApp(http_auth_level=func.AuthLevel.FUNCTION)
 
-key = os.getenv("LANGUAGE_KEY")
-lang_endpoint = os.getenv("LANGUAGE_ENDPOINT")
-
-credential = AzureKeyCredential(key)
-client = TextAnalyticsClient(endpoint=lang_endpoint, credential=credential)
-
-
-SUBSCRIPTION_KEY = os.getenv("SPEECH_KEY")
-SERVICE_REGION = os.getenv("SPEECH_REGION")
-BLOB_ENDPOINT=os.getenv("BLOB_ENDPOINT")
 
 RECORDINGS_CONTAINER_URI = f"{BLOB_ENDPOINT}/audio-files"
 SPEECH_OUTPUT_CONTAINER_URI = f"{BLOB_ENDPOINT}/speech-output"
@@ -65,7 +60,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
 
     data = {
         "contentContainerUrl": RECORDINGS_CONTAINER_URI,
-        "destinationContainerUrl": "https://functionapp1016.blob.core.windows.net/speech-output?sp=r&st=2024-10-17T02:05:25Z&se=2024-10-17T10:05:25Z&spr=https&sv=2022-11-02&sr=c&sig=FVl6GoeXisv0f0Wh9rhcriGj3iAXID8hZOD7vt9Lzk4%3D",
+        "destinationContainerUrl": DESTINATION_CONTAINER_URL,
         "properties": {
             "diarizationEnabled": False,
             "wordLevelTimestampsEnabled": False,
@@ -91,7 +86,6 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info(response.json())
 
     url = response.json().get("self")
-    # transcription_endpoint = 'https://eastus.api.cognitive.microsoft.com/speechtotext/v3.2/transcriptions/81889019-5cc8-4c33-8bf2-4081faa1aeb1'
     
     while True:
         time.sleep(3)

@@ -5,7 +5,8 @@ __pycache__/
 
 # C extensions
 *.so
-
+service_principal
+check_status.py
 # Distribution / packaging
 .Python
 build/

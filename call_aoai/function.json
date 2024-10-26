@@ -1,11 +1,10 @@
 {
-  "scriptFile": "__init__.py",
   "bindings": [
     {
-      "name": "blob",
+      "name": "myblob",
       "type": "blobTrigger",
       "direction": "in",
-      "path": "audio-files/{name}",
+      "path": "silver/{name}",
       "connection": "AzureWebJobsStorage"
     }
   ]
