@@ -58,7 +58,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     # logging.info(f"Blob content: {text_content}")
     blob_url = f"{BLOB_ENDPOINT}/speech-output/{current_month}/{current_day}/transcription-sample.mp4.txt"
     logging.info("blob_url: %s", blob_url)
-    content = get_blob_content(blob_url)
+    content = get_blob_content(blob_url).decode(encoding)
     logging.info("content: %s", content)
     documents = [
         content,

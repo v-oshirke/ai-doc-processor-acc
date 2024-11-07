@@ -1,40 +1,24 @@
-adverse_events_prompt = """You	are	GPT-4o,	a	powerful	language	model	integrated	with	Azure	OpenAI,	specializing	in	the	analysis	of	medical	texts	to	identify	adverse
-events	(AEs)	related	to	pharmaceutical	products.
-Definition	of	Adverse	Event	(AE):
-An	adverse	event	(AE)	is	any	untoward	medical	occurrence	that	happens	during	or	after	treatment	with	a	pharmaceutical	product,	which	
-may	or	may	not	be	causally	related	to	the	treatment.	AEs	do	not	include	inquiries	about	side	effects,	product-related	questions,	non-human-related	reports,	missing	reporting	components	(PERD:	Patient,	Event,	Reporter,	Drug),	hearsay,	dosage/use	inquiries,	or	general	
-concerns	about	the	product	or	disease.
-Categories	of	Adverse	Events:
-Adverse	events	are	categorized	as	follows:
-• Life-threatening	AEs: Events	that	immediately	place	the	patient	at	risk	of	death,	as	judged	by	the	initial	reporter.
-Serious	AEs: Events	resulting	in	death,	life-threatening	conditions,	inpatient	hospitalization,	persistent	or	significant	
-disability/incapacity,	congenital	anomalies/birth	defects,	or	other	serious	medical	conditions.
+adverse_events_prompt = """Using Azure OpenAI, analyze the given text to identify adverse events. If an adverse event is found, flag it and provide a summary of the reasons supporting the belief that there is an adverse event in the provided text.
+An adverse event refers to any medical occurrence that may occur during or after treatment with a pharmaceutical product, and may or may not be causally related to the treatment. Adverse events do not include inquiries about side effects, the product itself, non human-related reports, missing reporting components, hearsay, dosage/use inquiries, or concerns about the product or disease.
+AEs can be categorized as life-threatening or serious. Life-threatening AEs are events that, in the view of the initial reporter, immediately place the patient at risk of death. Serious AEs include events that result in death, life-threatening conditions, inpatient hospitalization, persistent/significant disability, congenital anomalies/birth defects, or other serious conditions.
+Adverse events may present as signs, physiological observations, symptoms, changes in laboratory values, diseases, or unexpected therapeutic/clinical benefits.
+Serious adverse events include death, life-threatening reactions, hospital admission, events resulting in congenital anomalies/birth defects, events resulting in persistent/significant disability/incapacity, and other medically significant events (e.g., suicide attempts).
+Please note that adverse events are not always obvious and may not be communicated as complaints or negative effects. It is important to listen for cues and never solicit AE information, although probing for clarification is allowed.
+Examples of adverse events include allergic reactions after product use, death or life-threatening events, hospitalizations, persistent/significant incapacities, congenital anomalies/birth defects, and other important medical events with a reasonable possibility of being caused by the drug.
+Adverse events may present as signs (e.g., rash), symptoms (e.g., headache), diseases, changes in laboratory values, physiological observations (e.g., weight change), or as a result of product complaints (e.g., feeling nauseous after taking a medication that smelled like gas or rotten cheese).
+When	you	output	the	results	of	your	analysis,	here	is	the	format	of	the	table	I	want	you	to	create.		The	table	should	have	seven	columns,	as	follows:
+Call	ID	- This	is	the	reference	to	the	call	transcript	number.		If	there	is	no	call	reference	number,	your	response	should	be	"UNKNOWN"
+Reportable	Event	(Y/N)	- If	your	analysis	finds	a	Averse	Event,	this	value	should	be	"Y",	otherwise	"N"
+Reporter	- This	value	represents	the	person	that	is	calling	in	the	adverse	event.		This	person	could	be	the	same	as	the	impacted	person	(patient).		If	you	do	not	know	the	name	of	the	reporter,	use	the	value	"UNKNOWN	REPORTER".
+Impacted	Individual	- This	value	representers	the	patient	and/or	the	person	who	is	having	the	adverse	event.		If	you	do	not	know	the	name	of	the	impacted	person,	use	the	value	"UNKNOWN	PERSON".
+Text	Portion	- This	is	a	short	summary	of	the	adverse	event.
+Term	Identified	- This	is	a	one	word	or	two	word	key	phrase	that	was	reported.
+Confidence	Score	- This	should	be	a	measure	of	how	confident	you	as	the	LLM	are	regarding	the	reportable	event	after	your	analysis.		Score	should	be	low,	medium,	or	high.		Measurement	of	high	is	based	upon	you	finding	exact	words	that	match	to	an	adverse	event.
+Note	that	all	of	this	information	within	the	table	should	be	found	within	your	analysis	results.		Don't	make	anything	up	that you	don't	know	or	have	found	within	the	call	text
 
-Forms	of	Adverse	Event	Presentation:
-Adverse	events	may	present	in	various	forms,	including:
-• Signs: e.g.,	rash,	swelling
-• Symptoms: e.g.,	headache,	nausea
-• Diseases: e.g.,	new	onset	of	a	disease	or	exacerbation	of	a	pre-existing	condition
-• Changes	in	laboratory	values: e.g.,	elevated	liver	enzymes
-• Physiological	observations: e.g.,	significant	weight	change,	abnormal	heart	rate
-• Product	complaints	leading	to	AEs: e.g.,	feeling	nauseous	after	taking	medication	with	an	unusual	odor	or	taste
-Specific	Handling	of	Drug	Administration	Issues:
-If	the	text	indicates	that	a	pill	was	chewed,	this	should	be	automatically	flagged	as	an	adverse	event	unless	the	pill	is	explicitly	described	as	a	
-chewable	product	(e.g.,	chewable	aspirin).	Improper	drug	administration,	such	as	chewing	or	crushing	non-chewable	medications,	should	be	
-considered	an	AE	due	to	potential	adverse	effects.
-Important	Considerations:
-Subtle	AEs: Adverse	events	are	not	always	obvious	and	may	not	be	communicated	as	explicit	complaints	or	negative	effects.	Listen	for	
-cues,	and	ensure	thorough	analysis	of	subtle	or	implied	adverse	events.
-•
-Do	not	solicit	AE	information: While	you	must	avoid	soliciting	AE	details	directly,	probing	for	clarification	is	allowed	when	needed	to	
-understand	potential	adverse	events.
-•
-Instructions	for	Analysis:
-For	each	adverse	event	identified	in	the	text,	flag	it	and	provide	a	summary	explaining	why	it	qualifies	as	an	adverse	event	based	on	the	
-provided	guidelines.	Ensure	that	any	AE	flagged	meets	the	reporting	criteria	and	has	identifiable	components	as	per	the	training	(PERD:	
-Patient,	Event,	Reporter,	Drug).
+Your final output should be JSON in the following format and no other format. Follow this structure exactly, replacing the placeholders with the relevant information extracted from the analysis. Ensure the fields stay the same.
 
-Your final output should be a JSON in the following format:
+Example JSON output:
 [
   {
     "Call Id": "XXXXXX",
@@ -64,8 +48,18 @@ Your final output should be a JSON in the following format:
     "Confidence Score": "Medium"
   }
 ]
+Note: Only provide output strictly in the JSON format shown above. Do not include any other text or explanations outside of this JSON structure."""
 
+drug_name_system_prompt="""Analyze the given text to identify the drug name and then select the file that most closely relates to the drugname.
 
+Example:
+Text: "I have been taking ALEVE Caplets for my back pain."
+File Name: "ALEVE Caplets 110 Count OCT 2024 2586660241.pdf"
+
+Do not generate anything other than what is included in the list of drugs. Generate the filename exactly. If the drug name is not found in the list, output "UNKNOWN" and do not generate a filename. If the drug name is found in the list, but the filename is not found, output "UNKNOWN FILE NAME" and do not generate a filename. If the drug name is found in the list and the filename is found, output the filename exactly as it appears in the list.
 """
+
+drug_name_user_prompt="""Analyze the given text and the list of drugs to identify the drug name and then select the file that most closely relates to the drugname.\n\nText: \n"""
+
 prompt_3 = "Please summarize the following text: {text}"
 prompt_4 = "Answer the question based on the given context: {context} \n Question: {question}"
