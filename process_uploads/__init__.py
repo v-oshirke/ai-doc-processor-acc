@@ -10,7 +10,7 @@ from azure.identity import DefaultAzureCredential
 
 def extract_text_from_docx(blob_name):
   # Get the content of the blob
-  content = get_blob_content("ui-uploads", blob_name)
+  content = get_blob_content("bronze", blob_name)
   # Load the content into a Document object
   doc = Document(io.BytesIO(content))
   # Extract and print the text
@@ -24,7 +24,7 @@ def extract_text_from_docx(blob_name):
 
 
 def call_whisper(blob_name):
-  audio_content = get_blob_content("ui-uploads", blob_name)
+  audio_content = get_blob_content("bronze", blob_name)
   
   credential = DefaultAzureCredential()
 
@@ -49,7 +49,7 @@ def main(req: func.HttpRequest):
 
   month, date = get_month_date()
 # Lists blobs in ui-uploads container
-  for blob in list_blobs('ui-uploads'):
+  for blob in list_blobs('bronze'):
     blob_name = blob.name
 
     if blob_name.endswith(".docx"):

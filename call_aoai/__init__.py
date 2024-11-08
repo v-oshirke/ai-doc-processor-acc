@@ -15,7 +15,8 @@ import datetime
 current_date = datetime.date.today()
 month = current_date.month
 day = current_date.day
-ENDPOINT = "https://remmey-aoai.openai.azure.com/openai/deployments/gpt-4o/chat/completions?api-version=2024-02-15-preview"
+AOAI_ENDPOINT = os.getenv("OPENAI_API_BASE")
+ENDPOINT = f"{AOAI_ENDPOINT}/openai/deployments/gpt-4o/chat/completions?api-version=2024-02-15-preview"
 
 def call_aoai(system_prompt, user_prompt):
   credential = DefaultAzureCredential()
