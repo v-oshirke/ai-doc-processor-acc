@@ -8,12 +8,6 @@ BLOB_ENDPOINT=os.getenv("BLOB_ENDPOINT")
 blob_credential = DefaultAzureCredential()  # Uses managed identity or local login
 blob_service_client = BlobServiceClient(account_url=BLOB_ENDPOINT, credential=blob_credential)
 
-# DESTINATION_CONTAINER_URL=os.getenv("DESTINATION_CONTAINER_URL")
-
-# RECORDINGS_CONTAINER_URI = f"{BLOB_ENDPOINT}/audio-files"
-# SPEECH_OUTPUT_CONTAINER_URI = f"{BLOB_ENDPOINT}/speech-output"
-
-
 logging.info(f"BLOB_ENDPOINT: {BLOB_ENDPOINT}")
 
 def write_to_blob(container_name, blob_path, data):

@@ -8,3 +8,8 @@ test
 .venv
 azurite
 service_principal
+transcribe/
+whisper
+transcribe
+call*
+process*

@@ -2,22 +2,28 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "sites_functionapp929_name": {
+        "function_app_name": {
             "value": null
         },
-        "components_functionapp929_name": {
+        "vault_name": {
             "value": null
         },
-        "accounts_speech_9_12_name": {
+        "components_functionapp_name": {
             "value": null
         },
-        "storageAccounts_functionapp912_name": {
+        "searchServices_name": {
             "value": null
         },
-        "serverfarms_ASP_functionapp912_af0e_name": {
+        "storageAccount_name": {
             "value": null
         },
-        "workspaces_DefaultWorkspace_253f778b_553f_4871_b143_123f314c45c1_EUS_externalid": {
+        "workspaces_DefaultWorkspace_253f778b_553f_4871_b143_123f314c45c1_CCAN_externalid": {
+            "value": null
+        },
+        "serverfarms_ASP_functionapp_name": {
+            "value": null
+        },
+        "workspaceName": {
             "value": null
         }
     }

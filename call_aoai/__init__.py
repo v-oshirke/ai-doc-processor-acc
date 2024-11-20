@@ -12,13 +12,18 @@ from azure.keyvault.secrets import SecretClient
 from utils.blob_functions import get_blob_content, write_to_blob, list_blobs
 
 import datetime
-current_date = datetime.date.today()
-month = current_date.month
-day = current_date.day
+
+def get_datetime():
+  current_date = datetime.date.today()
+  month = current_date.month
+  day = current_date.day
+  return month, day
+
 AOAI_ENDPOINT = os.getenv("OPENAI_API_BASE")
 ENDPOINT = f"{AOAI_ENDPOINT}/openai/deployments/gpt-4o/chat/completions?api-version=2024-02-15-preview"
 
 def call_aoai(system_prompt, user_prompt):
+  
   credential = DefaultAzureCredential()
     # Get token from the credential
   token = credential.get_token("https://cognitiveservices.azure.com/.default").token
@@ -68,7 +73,6 @@ def main(myblob: func.InputStream):
   logging.info(f"Processing blob \n"
               f"Name: {myblob.name}\n"
               f"Blob Size: {myblob.length} bytes")
-
   if os.getenv('LOCAL_DEV') == "True":
     content = get_blob_content("silver", "result.json").decode('utf-8')
   else:
