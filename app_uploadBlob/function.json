@@ -5,8 +5,8 @@
       "type": "httpTrigger",
       "direction": "in",
       "name": "req",
-      "methods": [ "get" ],
-      "routes": "app_getBlobsByContainer"
+      "methods": [ "post" ],
+      "route": "app_uploadBlob"
     },
     {
       "type": "http",

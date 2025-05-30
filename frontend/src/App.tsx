@@ -1,11 +1,11 @@
 import { Container, Typography, Button, Box, Grid } from '@mui/material';
 import BlobList, { SelectedBlob } from './components/BlobList';
-import PromptEditor from './components/PromptEditor';
+//import PromptEditor from './components/PromptEditor';
 import { useState } from 'react';
 
 function App() {
   const [selectedBlobs, setSelectedBlobs] = useState<SelectedBlob[]>([]);
-
+  
   // Azure Function URLs
   const azureFunctionUrls = {
     processUploads: '/api/processUploads',
@@ -77,7 +77,7 @@ function App() {
         }}
       >
         <Typography variant="h4" gutterBottom>
-          AI Document Processor
+          EY IXBRL DOCUMENT REVIEWER
         </Typography>
 
         {/* Two buttons at the top */}
@@ -86,6 +86,7 @@ function App() {
             variant="contained" 
             color="primary" 
             onClick={() => callAzureFunction(azureFunctionUrls.processUploads, "bronze")}
+            style={{ display: 'none'}}
           >
             Extract Text
           </Button>
@@ -99,17 +100,10 @@ function App() {
           </Button>
         </Box>
       </Box>
-
-      {/* Two-column layout */}
+      
       <Grid container spacing={2}>
-        {/* Left column: Blob viewer */}
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12}>
           <BlobList onSelectionChange={setSelectedBlobs} />
-        </Grid>
-
-        {/* Right column: Prompt Editor */}
-        <Grid item xs={12} md={6}>
-          <PromptEditor />
         </Grid>
       </Grid>
     </Container>

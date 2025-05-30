@@ -6,7 +6,7 @@
       "direction": "in",
       "name": "req",
       "methods": [ "get" ],
-      "routes": "app_getBlobsByContainer"
+      "route": "app_downloadBlobs"
     },
     {
       "type": "http",
